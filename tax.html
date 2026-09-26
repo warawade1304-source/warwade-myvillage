@@ -221,6 +221,13 @@ if(__discActive&&discountCfg.to){
   let __toD=new Date(discountCfg.to+'T00:00:00'), __todD=new Date(__todayStr+'T00:00:00');
   __daysLeft=Math.max(0,Math.round((__toD-__todD)/86400000));
 }
+// तारीख नेहमी dd/mm/yyyy याच स्वरूपात दाखवण्यासाठी (yyyy-mm-dd मधून रूपांतर) —
+function fmtDDMMYYYY(iso){
+  if(!iso)return '';
+  let p=String(iso).split('-');
+  if(p.length!==3)return iso;
+  return p[2]+'/'+p[1]+'/'+p[0];
+}
 
 /* 🔽 Dropdown fill – page load ला */
 window.onload = () => {
@@ -347,7 +354,7 @@ ${__discActive?(
 +'<div class="d-pct">मागील थकबाकीवर '+__discPctMagil+'% सवलत'+(__discPctChalu?' + चालू रकमेवर '+__discPctChalu+'% सवलत':'')+'</div>'
 +'<div class="d-amt">तुम्हाला ₹ '+discountAmt+' सवलत मिळाली!</div>'
 +'<div class="d-full">सवलतीशिवाय पूर्ण रक्कम ₹ '+(gharFull+paniFull)+'</div>'
-+(discountCfg.to?('<div class="d-days">⏳ '+(__daysLeft>0?('फक्त आणखी '+__daysLeft+' दिवस बाकी'):'आजचा शेवटचा दिवस!')+' — दि. '+discountCfg.to+' पर्यंत</div>'):'')
++(discountCfg.to?('<div class="d-days">⏳ '+(__daysLeft>0?('फक्त आणखी '+__daysLeft+' दिवस बाकी'):'आजचा शेवटचा दिवस!')+' — दि. '+fmtDDMMYYYY(discountCfg.to)+' पर्यंत</div>'):'')
 +'</div>'
 ):''}
 </div>
