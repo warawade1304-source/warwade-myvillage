@@ -340,7 +340,7 @@ function selectName(){
    ग्रामपंचायत सॉफ्टवेअरमधील "नागरिक ॲप मागण्या" यादीत दिसते. Project ID/API key भरले नसतील तर हा फॉर्म दिसत नाही. */
 const WEB_FB={p:'warawade-gp',k:'AIzaSyAmoK_1zY6h5ml0VuLB2gjf6JvI_3BWoHE'};
 /* UPI लिंक — मोबाईलवर दाबल्यावर GPay / PhonePe / Paytm इ. ॲप रक्कम आणि नोंद भरलेल्या स्थितीत उघडते (QR स्कॅन पर्यायही कायम). */
-const UPI_CFG={gh:'',pa:'',gp:'वरवडे'};
+const UPI_CFG={gh:'gaikwadsu11@okhdfcbank',pa:'gaikwadsu11@okhdfcbank',gp:'वरवडे'};
 function upiOk(v){return !!v&&!/^__/.test(v)&&/^[\w.\-]{2,}@[A-Za-z]{2,}$/.test(v);}
 function upiBtn(kind,amt,ano){
   var vpa=kind==='pa'?(upiOk(UPI_CFG.pa)?UPI_CFG.pa:UPI_CFG.gh):UPI_CFG.gh;
