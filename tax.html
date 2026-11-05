@@ -161,7 +161,7 @@ body{font-family:Arial;background:#f3f7ff;margin:0}
 #payModal input[type=text],#payModal input[type=tel],#payModal input[type=number]{width:100%;box-sizing:border-box;padding:10px;font-size:16px;border:2px solid #9bb7d8;border-radius:8px}
 #payModal .pm-sec{border:2px solid #cfe0f5;border-radius:10px;padding:4px 12px 12px;margin-top:12px;background:#f7fbff}
 #payModal .pm-sec h4{margin:8px 0 0;color:#003f7f}
-#payModal .pm-msg{margin-top:10px;font-size:14px;font-weight:bold}
+#payModal .pm-note{background:#fff8e1;border:1px solid #f0d58a;border-radius:8px;padding:8px 10px;font-size:12.5px;line-height:1.6;margin-top:10px;color:#6b4e00}#payModal .pm-alloc{font-size:12px;line-height:1.6;color:#0b5a2a;margin-top:4px}#payModal .pm-msg{margin-top:10px;font-size:14px;font-weight:bold}
 #payModal .pm-err{color:#c62828}#payModal .pm-ok{color:#1b7a1b}
 #payModal .pm-row{display:flex;gap:10px;margin-top:14px}
 #payModal .pm-row button{flex:1;padding:12px;font-size:16px;font-weight:bold;border-radius:8px;border:none;cursor:pointer}
@@ -226,7 +226,7 @@ body{font-family:Arial;background:#f3f7ff;margin:0}
 <div id="result"></div>
 
 <!-- 📤 भरणा केल्यानंतर UTR / स्क्रीनशॉट थेट ग्रामपंचायतीला पाठवण्याचा फॉर्म -->
-<div id="payModal" onclick="if(event.target===this)closePay()">
+<div id="payModal" onpointerdown="this._d=(event.target===this)" onclick="if(this._d&&event.target===this)closePay();this._d=false">
  <div class="pm-card" id="pmCard">
   <h3>📤 भरणा माहिती पाठवा</h3>
   <div style="text-align:center;font-size:13px;color:#555">मिळकत क्र. <b id="pmNo"></b></div>
@@ -235,13 +235,14 @@ body{font-family:Arial;background:#f3f7ff;margin:0}
    <label>मोबाईल नंबर * (१० अंकी)</label><input type="tel" id="pmMob" inputmode="numeric" maxlength="10" placeholder="9XXXXXXXXX">
    <label>WhatsApp नंबर * (पावती याच नंबरवर पाठवली जाईल)</label><input type="tel" id="pmWa" inputmode="numeric" maxlength="10" placeholder="9XXXXXXXXX">
    <label style="display:flex;gap:8px;align-items:center;font-weight:600"><input type="checkbox" id="pmWaSame" style="width:auto" onchange="if(this.checked)document.getElementById('pmWa').value=document.getElementById('pmMob').value.replace(/\D/g,'')">वरील मोबाईल नंबरच WhatsApp आहे</label>
+   <div class="pm-note">ℹ️ पूर्ण रक्कम भरायची नसेल तर प्रत्यक्ष भरलेली (कमी) रक्कम खाली टाका. ती रक्कम आधी <b>मागील थकबाकीत</b> (घरपट्टी → दिवाबत्ती → आरोग्य → पडसर या क्रमाने), उरलेली <b>चालू</b> करात जमा होईल. सवलत फक्त सवलतीनंतरची पूर्ण रक्कम भरल्यासच लागू होते.</div>
    <div class="pm-sec" id="pmGh"><h4>🏠 घरपट्टी</h4>
-     <label>भरलेली रक्कम ₹ (न भरल्यास 0)</label><input type="number" id="pmAmtGh" inputmode="numeric" min="0">
+     <label>भरलेली रक्कम ₹ (न भरल्यास 0)</label><input type="number" id="pmAmtGh" inputmode="numeric" min="0" oninput="pmAlloc()"><div class="pm-alloc" id="pmAllocGh"></div>
      <label>UTR / व्यवहार क्रमांक</label><input type="text" id="pmUtrGh" inputmode="numeric" maxlength="30" placeholder="१२ अंकी UTR">
      <label>पेमेंट स्क्रीनशॉट (UTR नसल्यास आवश्यक)</label><input type="file" id="pmShotGh" accept="image/*" onchange="pmPick(this,'gh')"><div class="pm-msg" id="pmSmGh"></div>
    </div>
    <div class="pm-sec" id="pmPa"><h4>💧 पाणीपट्टी</h4>
-     <label>भरलेली रक्कम ₹ (न भरल्यास 0)</label><input type="number" id="pmAmtPa" inputmode="numeric" min="0">
+     <label>भरलेली रक्कम ₹ (न भरल्यास 0)</label><input type="number" id="pmAmtPa" inputmode="numeric" min="0" oninput="pmAlloc()"><div class="pm-alloc" id="pmAllocPa"></div>
      <label>UTR / व्यवहार क्रमांक</label><input type="text" id="pmUtrPa" inputmode="numeric" maxlength="30" placeholder="१२ अंकी UTR">
      <label>पेमेंट स्क्रीनशॉट (UTR नसल्यास आवश्यक)</label><input type="file" id="pmShotPa" accept="image/*" onchange="pmPick(this,'pa')"><div class="pm-msg" id="pmSmPa"></div>
    </div>
@@ -356,6 +357,28 @@ function pmPick(inp,key){
   rd.onerror=()=>{sm.className='pm-msg pm-err';sm.textContent='❌ इमेज वाचता आली नाही';};
   rd.readAsDataURL(f);
 }
+function pmAllocLines(heads,amt){
+  let left=amt,pv=[],cu=[];
+  heads.forEach(h=>{let x=Math.min(left,h.p);if(x>0)pv.push(h.n+' ₹'+x);left-=x;});
+  heads.forEach(h=>{let x=Math.min(left,h.c);if(x>0)cu.push(h.n+' ₹'+x);left-=x;});
+  return {pv:pv,cu:cu,left:left};
+}
+function pmAlloc(){
+  let b=__pmCur;if(!b)return;
+  [['Gh','hg'],['Pa','wt']].forEach(([k,hk])=>{
+    let amt=Math.round(+document.getElementById('pmAmt'+k).value||0),el=document.getElementById('pmAlloc'+k),heads=b[hk],due=heads.reduce((t,h)=>t+h.p+h.c,0);
+    if(amt<=0){el.textContent='';return;}
+    if(amt>due){el.style.color='#c62828';el.textContent='⚠️ रक्कम शिल्लक (₹'+due+') पेक्षा जास्त आहे';return;}
+    el.style.color='';
+    let r=pmAllocLines(heads,amt),t=[];
+    if(r.pv.length)t.push('मागील थकबाकीत: '+r.pv.join(', '));if(r.cu.length)t.push('चालू करात: '+r.cu.join(', '));
+    let pay=(k==='Gh'?b.gh:b.pa),disc=(b.dpM||b.dpC)&&pay<due;
+    el.textContent=(amt===pay&&disc)?'✅ सवलतीसह पूर्ण भरणा — सवलत मिळेल आणि बाकी ₹ 0 होईल':'➜ '+t.join(' | ');
+    if(disc&&amt!==pay){let w=document.createElement('div');w.style.cssText='color:#c62828;font-weight:bold;margin-top:4px';
+      w.textContent='⚠️ सवलत योजना चालू आहे ('+(b.dpM?'मागील '+b.dpM+'% सूट':'')+(b.dpC?(b.dpM?' + ':'')+'चालू '+b.dpC+'% सूट':'')+'). ही सवलत फक्त सवलतीनंतरची पूर्ण रक्कम ₹'+pay+' भरल्यासच मिळते — रक्कम बदलली तर सवलत मिळणार नाही आणि भरलेली रक्कम मूळ (सवलतीशिवाय) थकबाकीत जमा होईल.';
+      el.appendChild(w);}
+  });
+}
 function pmMsg(t,ok){let m=document.getElementById('pmMsg');m.className='pm-msg '+(ok?'pm-ok':'pm-err');m.textContent=t||'';}
 function openPay(i){
   let b=__bills[i];if(!b)return;__pmCur=b;__pmShot={gh:'',pa:''};
@@ -365,7 +388,7 @@ function openPay(i){
   document.getElementById('pmName').value=b.name||'';document.getElementById('pmMob').value='';document.getElementById('pmWa').value='';document.getElementById('pmWaSame').checked=false;
   ['Gh','Pa'].forEach(k=>{document.getElementById('pmUtr'+k).value='';document.getElementById('pmShot'+k).value='';document.getElementById('pmSm'+k).textContent='';});
   document.getElementById('pmAmtGh').value=b.gh;document.getElementById('pmAmtPa').value=b.pa;
-  pmMsg('');document.getElementById('pmSend').disabled=false;
+  pmMsg('');document.getElementById('pmSend').disabled=false;pmAlloc();
   document.getElementById('payModal').style.display='flex';
 }
 function closePay(){document.getElementById('payModal').style.display='none';}
@@ -379,6 +402,9 @@ function sendPay(){
   if(!/^[6-9]\d{9}$/.test(wa))return pmMsg('⚠️ बरोबर १० अंकी WhatsApp नंबर टाका — पावती त्यावरच येईल');
   let aG=Math.round(+document.getElementById('pmAmtGh').value||0),aP=Math.round(+document.getElementById('pmAmtPa').value||0);
   if(aG<0||aP<0||aG>10000000||aP>10000000)return pmMsg('⚠️ रक्कम चुकीची आहे');
+  let dG=b.hg.reduce((t,h)=>t+h.p+h.c,0),dP=b.wt.reduce((t,h)=>t+h.p+h.c,0);
+  if(aG>dG)return pmMsg('⚠️ घरपट्टीची रक्कम शिल्लक (₹'+dG+') पेक्षा जास्त नको');
+  if(aP>dP)return pmMsg('⚠️ पाणीपट्टीची रक्कम शिल्लक (₹'+dP+') पेक्षा जास्त नको');
   if(aG+aP<=0)return pmMsg('⚠️ घरपट्टी किंवा पाणीपट्टी — किमान एकाची भरलेली रक्कम टाका');
   let uG=document.getElementById('pmUtrGh').value.trim(),uP=document.getElementById('pmUtrPa').value.trim();
   if(aG>0&&!uG&&!__pmShot.gh)return pmMsg('⚠️ घरपट्टीसाठी UTR क्रमांक किंवा स्क्रीनशॉट द्या');
@@ -443,7 +469,7 @@ let paniQR = paniPayable;
 
 
 let allPaid=(gharQR+paniQR)<=0;
-let bi=__bills.length;__bills.push({no:r["मिळकत नंबर"],ano:r["ano"],name:r["मिळकत धारकाचे नाव"],gh:gharPayable,pa:paniPayable,dpM:__discPctMagil,dpC:__discPctChalu});
+let bi=__bills.length;__bills.push({no:r["मिळकत नंबर"],ano:r["ano"],name:r["मिळकत धारकाचे नाव"],gh:gharPayable,pa:paniPayable,hg:[{n:"घरपट्टी",p:ph,c:ch},{n:"दिवाबत्ती",p:pl,c:cl},{n:"आरोग्य",p:pa,c:ca},{n:"पडसर",p:pp,c:cp}],wt:[{n:"पाणीपट्टी",p:pw,c:cw}],dpM:__discPctMagil,dpC:__discPctChalu});
 
 out+=`
 <div class="bill-box">
