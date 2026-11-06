@@ -472,10 +472,7 @@ let gharPayable=Math.round(chaluGharAfter+magilGharAfter);
 let paniPayable=Math.round(chaluPaniAfter+magilPaniAfter);
 let gharFull=Math.round(magilGhar+chaluGhar);
 let paniFull=Math.round(magilPani+chaluPani);
-let discountAmt=(gharFull+paniFull)-(gharPayable+paniPayable); /* सवलत = पूर्ण रक्कम − भरायची रक्कम (QR वरच्या रकमेशी नेहमी जुळते) */
-/* 🎁 सवलतीची फोड: मागील थकबाकीवरची सवलत "थकबाकी" रकान्यात, चालूवरची "चालू" रकान्यात (सॉफ्टवेअरच्या नमुना ९ प्रमाणेच) */
-let discPrev=Math.min(discountAmt,Math.round(magilGhar*__discPctMagil/100)+Math.round(magilPani*__discPctMagil/100));
-let discCurr=discountAmt-discPrev;
+let discountAmt=Math.round((magilGhar-magilGharAfter)+(chaluGhar-chaluGharAfter)+(magilPani-magilPaniAfter)+(chaluPani-chaluPaniAfter));
 
 /* QR वरची रक्कमही आता "भरायची" (सवलतीसह असल्यास सवलतीनंतरची) रक्कमच दाखवते, जेणेकरून
    पावतीवरचा आकडा आणि QR स्कॅन करून भरायची रक्कम — दोन्ही जुळतील. */
@@ -507,8 +504,6 @@ out+=`
 <td>${currTotal}</td>
 <td>${prevTotal+currTotal}</td>
 </tr>
-${(__discActive&&discountAmt>0)?`<tr style="font-weight:bold;color:#1b7a1b"><td colspan="2">🎁 सवलत (सूट)</td><td>- ${discPrev}</td><td>- ${discCurr}</td><td>- ${discountAmt}</td></tr>
-<tr style="font-weight:bold"><td colspan="2">सवलतीनंतर भरायची रक्कम</td><td>${prevTotal-discPrev}</td><td>${currTotal-discCurr}</td><td>${prevTotal+currTotal-discountAmt}</td></tr>`:''}
 </table>
 
 <div class="pay-box">
@@ -520,7 +515,6 @@ ${__discActive?(
 +(discountCfg.note?'<div class="d-title">🎉 '+discountCfg.note.replace(/</g,'&lt;')+'</div>':'<div class="d-title">🎉 सध्या कर सवलत योजना लागू आहे!</div>')
 +'<div class="d-pct">मागील थकबाकीवर '+__discPctMagil+'% सवलत'+(__discPctChalu?' + चालू रकमेवर '+__discPctChalu+'% सवलत':'')+'</div>'
 +'<div class="d-amt">तुम्हाला ₹ '+discountAmt+' सवलत मिळाली!</div>'
-+'<div class="d-pct">त्यापैकी: मागील थकबाकीवर ₹ '+discPrev+(__discPctChalu?' + चालू रकमेवर ₹ '+discCurr:'')+' सवलत</div>'
 +'<div class="d-full">सवलतीशिवाय पूर्ण रक्कम ₹ '+(gharFull+paniFull)+'</div>'
 +(discountCfg.to?('<div class="d-days">⏳ '+(__daysLeft>0?('फक्त आणखी '+__daysLeft+' दिवस बाकी'):'आजचा शेवटचा दिवस!')+' — दि. '+fmtDDMMYYYY(discountCfg.to)+' पर्यंत</div>'):'')
 +'</div>'
